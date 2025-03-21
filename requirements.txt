@@ -1,0 +1,6 @@
+Flask
+torch
+fastai==2.7.18
+gunicorn
+Werkzeug
+fasttransform
