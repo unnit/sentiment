@@ -29,18 +29,40 @@
             font-weight: bold;
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>Movie Review Sentiment Predictor</h1>
-    <form action="/predict" method="post">
-        <textarea name="review" placeholder="Enter your movie review..."></textarea>
-        <br><br>
-        <button type="submit">Predict Sentiment</button>
+    <h1>Movie Review Sentiment Analysis</h1>
+    <form id="review-form">
+        <textarea name="review" id="review" placeholder="Enter movie review" required></textarea>
+        <br/>
+        <button type="submit">Submit</button>
     </form>
-    
-    {% if prediction_text %}
-        <div class="result">{{ prediction_text }}</div>
-    {% endif %}
+    <h3 id="prediction-text"></h3>
+
+    <script>
+        $(document).ready(function () {
+            $('#review-form').submit(function (event) {
+                event.preventDefault();  // Prevent page reload
+
+                const reviewText = $('#review').val();
+                if (!reviewText) return;
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/predict',
+                    contentType: 'application/json',  // Specify JSON content type
+                    data: JSON.stringify({ review: reviewText }),  // Convert data to JSON string
+                    dataType: 'json',  // Expect JSON response
+                    success: function (response) {
+                        $('#prediction-text').text(response.sentiment + " (Confidence: " + response.confidence + ")");
+                    },
+                    error: function () {
+                        $('#prediction-text').text('Error: Could not get prediction.');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
-

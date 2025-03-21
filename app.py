@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 import pickle
 import torch
 from fastai.text.all import *
@@ -15,15 +15,27 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    review = request.form['review']
-    prediction = learn.predict(review)
-    
-    # Extract sentiment (e.g., 'neg' or 'pos') from the FastAI output
-    sentiment = 'Positive' if prediction[0] == 'pos' else 'Negative'
-    probability = round(prediction[2][1].item(), 4)  # Probability of positive sentiment
-    
-    return render_template('index.html', prediction_text=f'Sentiment: {sentiment} (Confidence: {probability * 100:.2f}%)')
+    if request.is_json:
+        data = request.get_json()
+        review = data.get('review', '')
+
+        # Validate input
+        if not review:
+            return jsonify({'error': 'No review provided'}), 400
+
+        # Get prediction from model
+        prediction = learn.predict(review)
+        sentiment = 'Positive' if prediction[0] == 'pos' else 'Negative'
+        probability = round(prediction[2][1].item(), 4)
+
+        # Return JSON response
+        return jsonify({
+            'sentiment': sentiment,
+            'confidence': f'{probability * 100:.2f}%'
+        })
+
+    # If not JSON, return an error
+    return jsonify({'error': 'Invalid content type, JSON expected'}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
-
