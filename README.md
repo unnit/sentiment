@@ -1,6 +1,6 @@
 Project Installation Instructions
 **1. Clone the project from the github repo**
-https://github.com/unnit/traffic_app
+https://github.com/unnit/sentiment
 
 **2. Make sure python is installed in your machine. You can check using**
 python --version
