@@ -1,6 +1,7 @@
 Flask
-torch
-fastai==2.7.18
 gunicorn
+torch
+transformers
+langdetect
+spacy
 Werkzeug
-fasttransform

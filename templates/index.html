@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Movie Review Sentiment Predictor</title>
+    <title>Emotion Analyzer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f4f4f4;
+            background: #f3f3f3;
             text-align: center;
             padding: 20px;
+            margin: auto 100px
         }
         textarea {
             width: 300px;
@@ -28,39 +29,120 @@
             font-size: 20px;
             font-weight: bold;
         }
+        .details {
+            margin-top: 10px;
+            text-align: left;
+            display: inline-block;
+            float: left;
+            margin-right: 20px;
+        }
+        canvas {
+            margin-top: 20px;
+        }
+        #emotionChart {
+            width: 700px !important;
+            height: 500px !important;
+            float: left;
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Movie Review Sentiment Analysis</h1>
+    <h1>Paragraph Emotion Detection</h1>
     <form id="review-form">
-        <textarea name="review" id="review" placeholder="Enter movie review" required></textarea>
+        <textarea name="review" id="review" style="width: 100%" placeholder="Enter a paragraph" required></textarea>
         <br/>
         <button type="submit">Submit</button>
     </form>
-    <h3 id="prediction-text"></h3>
+    <h3 id="overall-emotion"></h3>
+    <h4 id="language-detected"></h4>
+    <div id="sentence-details" class="details"></div>
+    <canvas id="emotionChart"></canvas>
+
+    <!-- <h2>Explainable AI (LIME)</h2>
+    <div id="lime-explanation" class="explanation"></div> -->
 
     <script>
         $(document).ready(function () {
-            $('#review-form').submit(function (event) {
-                event.preventDefault();  // Prevent page reload
+            let chart;
 
+            $('#review-form').submit(function (event) {
+                event.preventDefault();
                 const reviewText = $('#review').val();
                 if (!reviewText) return;
 
+                // Predict emotions
                 $.ajax({
                     type: 'POST',
                     url: '/predict',
-                    contentType: 'application/json',  // Specify JSON content type
-                    data: JSON.stringify({ review: reviewText }),  // Convert data to JSON string
-                    dataType: 'json',  // Expect JSON response
+                    contentType: 'application/json',
+                    data: JSON.stringify({ review: reviewText }),
+                    dataType: 'json',
                     success: function (response) {
-                        $('#prediction-text').text(response.sentiment + " (Confidence: " + response.confidence + ")");
-                    },
-                    error: function () {
-                        $('#prediction-text').text('Error: Could not get prediction.');
+                        $('#overall-emotion').text('Overall Emotion: ' + response.overall_sentiment);
+                        $('#language-detected').text('Detected Language: ' + response.language);
+
+                        const detailsDiv = $('#sentence-details');
+                        detailsDiv.empty();
+                        const emotions = {};
+
+                        response.details.forEach(function (detail) {
+                            detailsDiv.append('<p><strong>Sentence:</strong> ' + detail.sentence + '<br/><strong>Emotion:</strong> ' + detail.emotion + ' (Confidence: ' + detail.score + '%)</p>');
+                            if (emotions[detail.emotion]) {
+                                emotions[detail.emotion] += detail.score;
+                            } else {
+                                emotions[detail.emotion] = detail.score;
+                            }
+                        });
+
+                        // Create chart
+                        const labels = Object.keys(emotions);
+                        const data = Object.values(emotions);
+
+                        if (chart) chart.destroy();
+
+                        const ctx = document.getElementById('emotionChart');
+                        chart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Emotion Scores',
+                                    data: data,
+                                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        max: 100
+                                    }
+                                }
+                            }
+                        });
                     }
                 });
+
+                // Get explanation
+                // $.ajax({
+                //     type: 'POST',
+                //     url: '/explain',
+                //     contentType: 'application/json',
+                //     data: JSON.stringify({ review: reviewText }),
+                //     dataType: 'json',
+                //     success: function (response) {
+                //         const explanationDiv = $('#lime-explanation');
+                //         explanationDiv.empty();
+                //         explanationDiv.append('<h4>Top Features (LIME):</h4>');
+                //         response.explanation.forEach(function (feature) {
+                //             explanationDiv.append('<p>' + feature[0] + ': ' + (feature[1] * 100).toFixed(2) + '%</p>');
+                //         });
+                //     }
+                // });
             });
         });
     </script>
