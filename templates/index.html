@@ -2,66 +2,197 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emotion Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-light: #818cf8;
+            --secondary-color: #4f46e5;
+            --background-color: #f8fafc;
+            --text-color: #1e293b;
+            --card-background: #ffffff;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: #f3f3f3;
+            font-family: 'Inter', sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 1rem;
             text-align: center;
-            padding: 20px;
-            margin: auto 100px
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .card {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
         textarea {
-            width: 300px;
-            height: 100px;
-            padding: 10px;
-            margin-bottom: 10px;
+            width: 100%;
+            height: 150px;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            transition: var(--transition);
+            margin-bottom: 1rem;
         }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
         button {
-            padding: 10px 20px;
-            background: #4caf50;
+            background: var(--primary-color);
             color: white;
             border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
+            transition: var(--transition);
         }
-        .result {
-            margin-top: 20px;
-            font-size: 20px;
-            font-weight: bold;
+
+        button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
         }
+
+        .result-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .result-card {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
         .details {
-            margin-top: 10px;
+            margin-top: 1rem;
             text-align: left;
-            display: inline-block;
-            float: left;
-            margin-right: 20px;
         }
-        canvas {
-            margin-top: 20px;
+
+        .details p {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary-color);
         }
+
         #emotionChart {
-            width: 700px !important;
-            height: 500px !important;
-            float: left;
+            width: 100% !important;
+            height: 400px !important;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .result-section {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Paragraph Emotion Detection</h1>
-    <form id="review-form">
-        <textarea name="review" id="review" style="width: 100%" placeholder="Enter a paragraph" required></textarea>
-        <br/>
-        <button type="submit">Submit</button>
-    </form>
-    <h3 id="overall-emotion"></h3>
-    <h4 id="language-detected"></h4>
-    <div id="sentence-details" class="details"></div>
-    <canvas id="emotionChart"></canvas>
+    <header class="header">
+        <h1>Emotion Analyzer</h1>
+        <p>Analyze emotions in your text with AI-powered sentiment analysis</p>
+    </header>
 
-    <!-- <h2>Explainable AI (LIME)</h2>
-    <div id="lime-explanation" class="explanation"></div> -->
+    <div class="container">
+        <div class="card">
+            <form id="review-form">
+                <textarea name="review" id="review" placeholder="Enter your text here to analyze emotions..." required></textarea>
+                <button type="submit">Analyze Emotions</button>
+            </form>
+        </div>
+
+        <div class="result-section">
+            <div class="result-card">
+                <h3>Overall Analysis</h3>
+                <div id="overall-emotion"></div>
+                <div id="language-detected"></div>
+            </div>
+
+            <div class="result-card">
+                <h3>Detailed Analysis</h3>
+                <div id="sentence-details" class="details"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Emotion Distribution</h3>
+            <canvas id="emotionChart"></canvas>
+        </div>
+    </div>
 
     <script>
         $(document).ready(function () {
@@ -80,15 +211,21 @@
                     data: JSON.stringify({ review: reviewText }),
                     dataType: 'json',
                     success: function (response) {
-                        $('#overall-emotion').text('Overall Emotion: ' + response.overall_sentiment);
-                        $('#language-detected').text('Detected Language: ' + response.language);
+                        $('#overall-emotion').html('<strong>Overall Emotion:</strong> ' + response.overall_sentiment);
+                        $('#language-detected').html('<strong>Detected Language:</strong> ' + response.language);
 
                         const detailsDiv = $('#sentence-details');
                         detailsDiv.empty();
                         const emotions = {};
 
                         response.details.forEach(function (detail) {
-                            detailsDiv.append('<p><strong>Sentence:</strong> ' + detail.sentence + '<br/><strong>Emotion:</strong> ' + detail.emotion + ' (Confidence: ' + detail.score + '%)</p>');
+                            detailsDiv.append(`
+                                <p>
+                                    <strong>Sentence:</strong> ${detail.sentence}<br/>
+                                    <strong>Emotion:</strong> ${detail.emotion}<br/>
+                                    <strong>Confidence:</strong> ${detail.score}%
+                                </p>
+                            `);
                             if (emotions[detail.emotion]) {
                                 emotions[detail.emotion] += detail.score;
                             } else {
@@ -110,39 +247,39 @@
                                 datasets: [{
                                     label: 'Emotion Scores',
                                     data: data,
-                                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    backgroundColor: 'rgba(99, 102, 241, 0.6)',
+                                    borderColor: 'rgba(99, 102, 241, 1)',
                                     borderWidth: 1
                                 }]
                             },
                             options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
                                 scales: {
                                     y: {
                                         beginAtZero: true,
-                                        max: 100
+                                        max: 100,
+                                        title: {
+                                            display: true,
+                                            text: 'Confidence Score (%)'
+                                        }
+                                    },
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Emotions'
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: false
                                     }
                                 }
                             }
                         });
                     }
                 });
-
-                // Get explanation
-                // $.ajax({
-                //     type: 'POST',
-                //     url: '/explain',
-                //     contentType: 'application/json',
-                //     data: JSON.stringify({ review: reviewText }),
-                //     dataType: 'json',
-                //     success: function (response) {
-                //         const explanationDiv = $('#lime-explanation');
-                //         explanationDiv.empty();
-                //         explanationDiv.append('<h4>Top Features (LIME):</h4>');
-                //         response.explanation.forEach(function (feature) {
-                //             explanationDiv.append('<p>' + feature[0] + ': ' + (feature[1] * 100).toFixed(2) + '%</p>');
-                //         });
-                //     }
-                // });
             });
         });
     </script>
