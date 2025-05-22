@@ -34,7 +34,7 @@
         .header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 2rem 1rem;
+            padding: 1rem 1rem;
             text-align: center;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
@@ -157,11 +157,55 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .loader-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--primary-light);
+            border-bottom-color: var(--primary-color);
+            border-radius: 50%;
+            animation: rotation 1s linear infinite;
+        }
+
+        .loader-text {
+            margin-top: 1rem;
+            color: var(--primary-color);
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <div class="loader-container">
+        <div class="loader"></div>
+        <div class="loader-text">Analyzing emotions...</div>
+    </div>
+
     <header class="header">
         <h1>Emotion Analyzer</h1>
         <p>Analyze emotions in your text with AI-powered sentiment analysis</p>
@@ -203,6 +247,9 @@
                 const reviewText = $('#review').val();
                 if (!reviewText) return;
 
+                // Show loader
+                $('.loader-container').css('display', 'flex');
+
                 // Predict emotions
                 $.ajax({
                     type: 'POST',
@@ -211,6 +258,9 @@
                     data: JSON.stringify({ review: reviewText }),
                     dataType: 'json',
                     success: function (response) {
+                        // Hide loader
+                        $('.loader-container').css('display', 'none');
+
                         $('#overall-emotion').html('<strong>Overall Emotion:</strong> ' + response.overall_sentiment);
                         $('#language-detected').html('<strong>Detected Language:</strong> ' + response.language);
 
@@ -278,6 +328,11 @@
                                 }
                             }
                         });
+                    },
+                    error: function() {
+                        // Hide loader on error
+                        $('.loader-container').css('display', 'none');
+                        alert('An error occurred while analyzing the text. Please try again.');
                     }
                 });
             });
