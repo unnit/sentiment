@@ -1,4 +1,4 @@
-name: Deploy Sentiment App to EC2
+name: Deploy the Sentiment App to AWS EC2
 
 on:
   push:
