@@ -1,4 +1,4 @@
-name: Deploy Traffic App to EC2
+name: Deploy Sentiment App to EC2
 
 on:
   push:
